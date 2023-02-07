@@ -2,11 +2,11 @@
 session_start();
 require_once('link.php');
 $client = 'https://ipfs.fleek.co/ipfs/';
-if (!isset($_SESSION['userAddress'])) {
+if (!isset($_SESSION['crypticUserAddress'])) {
     header("Location: index");
 } else {
     if (isset($_POST['fetch'])) {
-        $user_address = ($_SESSION['userAddress']);
+        $user_address = ($_SESSION['crypticUserAddress']);
         $query = "SELECT * FROM `favourite_videos` INNER JOIN `video_info` ON `favourite_videos`.`video_info_id`=`video_info`.`video_uuid` WHERE `user_id`= '$user_address' ORDER BY `favourite_videos`.`favourite_video_id` DESC LIMIT 10";
         $result = mysqli_query($con, $query);
         if (mysqli_num_rows($result) > 0) {
@@ -16,7 +16,7 @@ if (!isset($_SESSION['userAddress'])) {
             $i = 1;
             while ($row = mysqli_fetch_assoc($result)) {
                $thumbnail = $client.$row['thumbnail_ipfs'];
-               $video_id = $row['video_uid'];
+               $video_id = $row['video_uuid'];
                $chapter_part = $row['video_id'];
                $chapter_name = $row['name'];
                $chapter_id = $row['video_id'];

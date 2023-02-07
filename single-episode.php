@@ -2,9 +2,6 @@
 session_start();
 include("php/link.php");
 $client = 'https://ipfs.fleek.co/ipfs/';
-$premium_pass = $_SESSION['premiumPass'];
-$access_pass = $_SESSION['accessPass'];
-$super_pass = $_SESSION['superPass'];
 $user_address = '';
 if (isset($_SESSION['crypticUserAddress'])) {
     $user_address = $_SESSION['crypticUserAddress'];
@@ -26,34 +23,37 @@ $course = "";
 $event_name = '';
 $video_url = '';
 $module_name = '';
+$webseries_name = '';
 $post_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '') && ($_GET['module'] !== '')) {
     $course = $_GET['course'];
     $module = $_GET['module'];
 
-    $result3 = mysqli_query($con, "SELECT * FROM `video_info` WHERE `module_uuid` = '$module'");
+    $queryNew = "SELECT * FROM `web-series-episodes-info` WHERE `web_series_uuid` = '$module'";
+    $result3 = mysqli_query($con, $queryNew);
     if (mysqli_num_rows($result3) > 0) {
         $total_count = mysqli_num_rows($result3);
     }
 
 
-
-    $result2 = mysqli_query($con, "SELECT * FROM `video_info` WHERE `video_uuid` = '$course' AND `module_uuid` = '$module'");
+    $result2 = mysqli_query($con, "SELECT * FROM `web-series-episodes-info` WHERE `video_uuid` = '$course' AND `web_series_uuid` = '$module'");
     if (mysqli_num_rows($result2) > 0) {
         while ($row = mysqli_fetch_assoc($result2)) {
+            $webseries_uuid = $row['web_series_uuid'];
             $showYoutube = 'none';
             $showPaid = 'block';
             $course_ID = $row['video_id'];
             $subtitles = '';
-            $title = $row['name'];
+            $title = $row['name_of_episode'];
             $date = $row['from_time'];
             $desc = $row['video_desc'];
             $module_name = $row['module'];
+            $episode_no = $row['episode_no'];
             $thumbnail2 =  $client . $row['thumbnail_ipfs'];
+            $video_view = $row['video_view'];
             $from_time = $row['from_time'];
             $date = date_create($from_time);
             $published_date = date_format($date, "d M,Y");
-            $video_view = $row['video_view'];
             $video_url = $row['video_uid'];
         }
     } else {
@@ -307,79 +307,79 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
 
         @media screen and (max-width: 480px) {
             .circular {
-                height: 100px;
-                width: 100px;
-                /* position: relative;
+            height: 100px;
+            width: 100px;
+            /* position: relative;
             transform: scale(2); */
-                position: absolute;
-                top: 35%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                z-index: 45;
-            }
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 45;
+        }
 
-            .circular .inner {
-                position: absolute;
-                z-index: 6;
-                top: 50%;
-                left: 50%;
-                height: 80px;
-                width: 80px;
-                margin: -40px 0 0 -40px;
-                background: #dde6f0;
-                border-radius: 100%;
-            }
+        .circular .inner {
+            position: absolute;
+            z-index: 6;
+            top: 50%;
+            left: 50%;
+            height: 80px;
+            width: 80px;
+            margin: -40px 0 0 -40px;
+            background: #dde6f0;
+            border-radius: 100%;
+        }
 
-            .circular .number {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                z-index: 10;
-                font-size: 18px;
-                font-weight: 500;
-                color: rgb(6 191 201);
-            }
+        .circular .number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            font-size: 18px;
+            font-weight: 500;
+            color: rgb(6 191 201);
+        }
 
-            .circular .bar {
-                position: absolute;
-                height: 100%;
-                width: 100%;
-                background: #fff;
-                -webkit-border-radius: 100%;
-                clip: rect(0px, 100px, 100px, 50px);
-            }
+        .circular .bar {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background: #fff;
+            -webkit-border-radius: 100%;
+            clip: rect(0px, 100px, 100px, 50px);
+        }
 
-            .circle .bar .progress {
-                position: absolute;
-                height: 100%;
-                width: 100%;
-                -webkit-border-radius: 100%;
-                clip: rect(0px, 50px, 100px, 0px);
-                background: rgb(6 191 201);
-            }
+        .circle .bar .progress {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            -webkit-border-radius: 100%;
+            clip: rect(0px, 50px, 100px, 0px);
+            background: rgb(6 191 201);
+        }
 
-            .circle .right .progress {
-                z-index: 1;
-                animation: left 1s linear both;
-            }
+        .circle .right .progress {
+            z-index: 1;
+            animation: left 1s linear both;
+        }
 
-            /* @keyframes left {
+        /* @keyframes left {
             100% {
                 transform: rotate(180deg);
             }
         } */
 
-            .circle .right {
-                transform: rotate(180deg);
-                z-index: 3;
-            }
+        .circle .right {
+            transform: rotate(180deg);
+            z-index: 3;
+        }
 
-            .circle .right .progress {
-                animation: right 1s linear both;
-                animation-delay: 1s;
-            }
-
+        .circle .right .progress {
+            animation: right 1s linear both;
+            animation-delay: 1s;
+        }
+            
         }
 
         .noneDisplay {
@@ -389,7 +389,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
 </head>
 
 <body>
-    <input type="hidden" name="video_uuid" value="<?= $course ?>" id="video_uuid">
+    <input type="hidden" name="video_uuid" value="<?= $module ?>" id="video_uuid">
     <input type="hidden" name="module_uuid" value="<?= $module ?>" id="module_uuid">
     <input type="hidden" id="rowCount" value="0">
     <input type="hidden" id="module_uid" value="<?= $module ?>">
@@ -407,9 +407,8 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
 
     <!--========== Header ==============-->
 
-    <!-- Single movie Start -->
     <?php
-    if (($access_pass == "" && empty($super_pass) && $premium_pass == "") || !empty($super_pass)) {
+    if (empty($_SESSION['superPass']) && $_SESSION['premiumPass'] == "") {
     ?>
         <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
         <script>
@@ -420,12 +419,13 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
                 button: 'Visit Now',
                 dangerMode: true,
             }).then((value) => {
-                window.location.href = "./plans.php";
+                window.location.href = "./plans";
             })
         </script>
     <?php
-    } else {
+    } else if ($_SESSION['premiumPass'] == "verified_premium_pass" || in_array($webseries_uuid, $_SESSION['superPassVideoUuid'])) {
     ?>
+        <!-- Single movie Start -->
         <section class="gen-section-padding-3 gen-single-movie pt-3">
             <div class="container">
                 <div class="row no-gutters">
@@ -473,19 +473,18 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
                                                 </video>
                                             </div>
 
-
                                         </div>
                                         <div class="next_button" style="z-index: 888;position:absolute;padding:1.5rem;margin-top:-85px;right:1rem;display:none;">
                                             <?php
-                                            $query = "SELECT * FROM `video_info` WHERE `module_uuid`= '$module' order by Rand() limit 1";
+                                            $episode_no = $episode_no + 1;
+                                            $query = "SELECT * FROM `web-series-episodes-info` WHERE `web_series_uuid`= '$module' AND `episode_no`='$episode_no' limit 1";
                                             $result = mysqli_query($con, $query);
                                             if (mysqli_num_rows($result) > 0) {
                                                 while ($row = mysqli_fetch_assoc($result)) {
                                                     $video_id_other = $row['video_uuid'];
-                                                    $module_other = $row['module_uuid'];
+                                                    $module_other = $row['web_series_uuid'];
                                             ?>
-
-                                                    <a href="single-movie?course=<?= $video_id_other ?>&module=<?= $module_other ?>" style="padding: 0.5rem 1rem;" class="btn btn-hover noneDisplay" id="setNextEpisode">Next
+                                                    <a href="single-episode?course=<?= $video_id_other ?>&module=<?= $module_other ?>&episodeNo=<?= $episode_no ?>" style="padding: 0.5rem 1rem;" class="btn btn-hover noneDisplay" id="setNextEpisode">Next
                                                         Video</a>
                                             <?php }
                                             } ?>
@@ -509,6 +508,10 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
                                         <div class="gen-after-excerpt">
                                             <div class="gen-extra-data">
                                                 <ul>
+                                                    <!-- <li>
+                                                    <span>Web Series : </span>
+                                                    <span><?php echo $webseries_name ?></span>
+                                                </li> -->
                                                     <li>
                                                         <span>Language :</span>
                                                         <span>Hindi,English</span>
@@ -523,7 +526,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
                                                     </li>
                                                     <li><span>Genre :</span>
                                                         <span>
-                                                            <a href="more-video?module=<?= $module ?>">
+                                                            <a href="web-series-episodes?video_uuid=<?= $webseries_uuid ?>">
                                                                 <?= $module_name ?></a>
                                                         </span>
                                                     </li>
@@ -552,7 +555,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
                                 <div class="col-lg-12">
                                     <div class="pm-inner">
                                         <div class="gen-more-like">
-                                            <h5 class="gen-more-title">More Like This</h5>
+                                            <h5 class="gen-more-title">All Episodes</h5>
                                             <div class="row all-follower">
                                             </div>
                                             <div class="row">
@@ -611,7 +614,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
                                                 <a href="/" aria-current="page">Home</a>
                                             </li>
                                             <?php
-                                            $queryCat = "SELECT DISTINCT `module`,`module_uuid` FROM `video_info`;";
+                                            $queryCat = "SELECT DISTINCT `module`,`module_uuid` FROM `web-series-episodes-info`;";
                                             $resultCat = mysqli_query($con, $queryCat);
                                             if (mysqli_num_rows($resultCat) > 0) {
                                                 while ($rowCat = mysqli_fetch_assoc($resultCat)) {
@@ -677,15 +680,30 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
             </div>
         </footer>
         <!-- footer End -->
+
+        <!-- Back-to-Top start -->
+        <div id="back-to-top">
+            <a class="top" id="top" href="#top"> <i class="ion-ios-arrow-up"></i> </a>
+        </div>
+        <!-- Back-to-Top end -->
+    <?php
+    } else {
+    ?>
+        <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+        <script>
+            swal({
+                title: "Error!",
+                text: "You are not authenticate user to access this page! Please buy the super pass to access this page!",
+                icon: "error",
+                button: 'Ok',
+                dangerMode: true,
+            }).then((value) => {
+                window.location.href = "/";
+            })
+        </script>
     <?php
     }
     ?>
-
-    <!-- Back-to-Top start -->
-    <div id="back-to-top">
-        <a class="top" id="top" href="#top"> <i class="ion-ios-arrow-up"></i> </a>
-    </div>
-    <!-- Back-to-Top end -->
 
     <!-- js-min -->
     <script src="js/jquery-3.6.0.min.js"></script>
@@ -799,7 +817,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
             // visitor view add start
             function addView(video_uuid, module_uuid) {
                 $.ajax({
-                    url: "php/addView.php",
+                    url: "php/addViewOnEpisodes.php",
                     method: "POST",
                     dataType: "json",
                     data: {
@@ -829,18 +847,18 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
             var limit = parseInt(10);
             var row = parseInt($('#rowCount').val());
             var count = parseInt($('#total_count').val());
-            var module_uid = $('#module_uid').val();
+            var video_uuid = $('#video_uuid').val();
 
-            function loadNow(row, limit, module_uid) {
+            function loadNow(row, limit, video_uuid) {
                 $('.button-text').css("display", "none");
                 $('.loadmore-icon').css("display", "block");
                 $.ajax({
                     type: 'POST',
-                    url: 'php/loadMoreVideoData.php',
+                    url: 'php/loadMoreWebSeriesEpisodeData.php',
                     data: {
                         "rowCount": row,
                         "limit": limit,
-                        "module_uuid": module_uid
+                        "video_uuid": video_uuid
                     },
                     success: function(data) {
                         row = parseInt(row) + parseInt(limit);
@@ -856,10 +874,10 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
                     }
                 });
             }
-            loadNow(row, limit, module_uid);
+            loadNow(row, limit, video_uuid);
             $('#loadMore').click(function() {
                 row = parseInt($('#rowCount').val());
-                loadNow(row, limit, module_uid);
+                loadNow(row, limit, video_uuid);
             });
 
         });
@@ -912,9 +930,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
             };
             request.onload = function() {
                 if (this.status === 200) {
-                    var file = new File([this.response], 'test.mp4', {
-                        type: 'video/mp4'
-                    });
+                    var file = new File([this.response], 'test.mp4', { type: 'video/mp4' });
                     let url2 = URL.createObjectURL(file);
                     document.getElementById('myVideo').src = url2;
                 }

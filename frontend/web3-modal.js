@@ -64,7 +64,7 @@ async function onConnectLoadWeb3Modal() {
   try {
     provider = await web3Modal.connect();
   } catch(e) {
-    console.log("Could not get a wallet connection", e);
+    ("Could not get a wallet connection", e);
     return;
   }
 

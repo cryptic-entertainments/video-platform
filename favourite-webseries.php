@@ -9,48 +9,25 @@ if(isset($_SESSION['crypticUserAddress'])){
     $user_address = '';
     header("Location:login");
 }
-
-
-
-if ((isset($_GET['name'])) && (isset($_GET['email'])) && (isset($_GET['phone'])) && (isset($_GET['address'])) && (isset($_GET['message']))) {
-    $data = array();
-    $from_ip = $_SERVER['REMOTE_ADDR'];
-    $from_browser = $_SERVER['HTTP_USER_AGENT'];
-    date_default_timezone_set("Asia/Calcutta");
-    $date_now = date("r");    
-    function guidv4($data)
-    {
-        assert(strlen($data) == 16);
-        $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
-        $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
-    } 
-        
-    $enquiry_id = guidv4(openssl_random_pseudo_bytes(16)); 
-    $name = mysqli_real_escape_string($con, $_GET['name']);
-    $email = mysqli_real_escape_string($con, $_GET['email']);
-    $phone = mysqli_real_escape_string($con, $_GET['phone']);
-    $address = mysqli_real_escape_string($con, $_GET['address']);
-    $message = mysqli_real_escape_string($con, $_GET['message']);
-
-
-    $query = "INSERT INTO `enquiry_info`(`enquiry_id`, `name`, `email`, `phone`,`address`,`message`, `from_ip`, `from_browser`, `from_time`) VALUES ('$enquiry_id','$name','$email','$phone','$address','$message','$from_ip','$from_browser','$date_now')";
-        
-    if (mysqli_query($con, $query) ) {
-        header("Location: contact-us");
-    } else {
-
-    }
-}
-
-
+$total_count = 0;
+if (isset($user_address)) {
+      $result2 = mysqli_query($con, "SELECT * FROM `favourite_webseries` INNER JOIN `web_series_info` ON `favourite_webseries`.`webseries_info_id`=`web_series_info`.`web_series_uuid` WHERE `user_id`= '$user_address' ORDER BY `favourite_webseries`.`favourite_webseries_id` DESC");
+      if (mysqli_num_rows($result2) > 0) {
+        $total_count = mysqli_num_rows($result2);
+      }else{
+        header("Location: /");
+      }
+   } else {
+      header("Location: /");
+   }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
-
-
 <head>
+    <!-- Hidden Input -->
+    <input type="hidden" id="user_address" value="<?php echo $user_address; ?>">
+
     <meta charset="utf-8">
     <!-- Enter a proper description for the page in the meta description tag -->
     <meta name="description"
@@ -71,13 +48,12 @@ if ((isset($_GET['name'])) && (isset($_GET['email'])) && (isset($_GET['phone']))
 
     <!-- Enter Logo image URL for example : http://cryptonite.finstreet.in/images/cryptonitepost.png -->
     <meta property="og:image" itemprop="image" content="https://platform.crypticentertainments.com/images/logo-1.png" />
-    <meta property="og:image:secure_url" itemprop="image"
-        content="https://platform.crypticentertainments.com/images/logo-1.png" />
+    <meta property="og:image:secure_url" itemprop="image" content="https://platform.crypticentertainments.com/images/logo-1.png" />
     <meta property="og:image:width" content="600">
     <meta property="og:image:height" content="315">
     <meta property="og:type" content="website" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Contact Us - Cryptic Entertainments</title>
+    <title>Favourite WebSeries - Cryptic Entertainments</title>
     <!-- Favicon -->
     <link rel="shortcut icon" href="images/favicon.ico">
     <!-- CSS bootstrap-->
@@ -86,9 +62,13 @@ if ((isset($_GET['name'])) && (isset($_GET['email'])) && (isset($_GET['phone']))
     <link rel="stylesheet" href="css/style.css" />
     <!--  Responsive -->
     <link rel="stylesheet" href="css/responsive.css" />
+    <link href="js/sweetalert/sweetalert.css" rel="stylesheet">
 </head>
 
 <body>
+    <!-- Hidden Input -->
+    <input type="hidden" id="user_address" value="<?php echo $user_address; ?>">
+    <input type="hidden" name="current_token_id" id="current_token_id">
 
     <!--=========== Loader =============-->
     <div id="gen-loading">
@@ -138,7 +118,7 @@ if ((isset($_GET['name'])) && (isset($_GET['email'])) && (isset($_GET['phone']))
                                 </div>
                             </div>
                             <div class="gen-header-info-box">
-                                <div class="gen-menu-search-block">
+                                <!-- <div class="gen-menu-search-block">
                                     <a href="javascript:void(0)" id="gen-seacrh-btn"><i class="fa fa-search"></i></a>
                                     <div class="gen-search-form">
                                         <form role="search" method="get" class="search-form" action="search">
@@ -151,7 +131,7 @@ if ((isset($_GET['name'])) && (isset($_GET['email'])) && (isset($_GET['phone']))
                                                     class="screen-reader-text"></span></button>
                                         </form>
                                     </div>
-                                </div>
+                                </div> -->
                                 <?php 
                                     if($user_address !== null && $user_address !== ''){
                                 ?>
@@ -168,10 +148,15 @@ if ((isset($_GET['name'])) && (isset($_GET['email'])) && (isset($_GET['phone']))
                                             </li>
                                             <!-- Library Menu -->
                                             <li>
-                                                <a href="favourite-videos">
-                                                    <i class="fa fa-heart"></i>
-                                                    My Favourite </a>
-                                            </li>
+                                                    <a href="favourite-videos">
+                                                        <i class="fa fa-heart"></i>
+                                                        My Favourite Videos     </a>
+                                                </li>
+                                                <li>
+                                                    <a href="favourite-webseries">
+                                                        <i class="fa fa-heart"></i>
+                                                        My Favourite Webseries</a>
+                                                </li>
                                             <li>
                                                 <a href="logout"><i class="fa fa-sign-out-alt"></i>
                                                     Sign Out </a>
@@ -204,6 +189,10 @@ if ((isset($_GET['name'])) && (isset($_GET['email'])) && (isset($_GET['phone']))
     <!--========== Header ==============-->
 
     <!-- breadcrumb -->
+    <input type="hidden" id="rowCount" value="0">
+    <input type="hidden" id="user_uid" value="<?= $user_address ?>">
+    <input type="hidden" id="total_count" value="<?= $total_count ?>">
+
     <div class="gen-breadcrumb" style="background-image: url('images/background/asset-25.jpg');">
         <div class="container">
             <div class="row align-items-center">
@@ -211,13 +200,14 @@ if ((isset($_GET['name'])) && (isset($_GET['email'])) && (isset($_GET['phone']))
                     <nav aria-label="breadcrumb">
                         <div class="gen-breadcrumb-title">
                             <h1>
-                                contact us
+                                Favourite WebSeries
                             </h1>
                         </div>
                         <div class="gen-breadcrumb-container">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home mr-2"></i>Home</a></li>
-                                <li class="breadcrumb-item active">Contact us</li>
+                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home mr-2"></i>Home</a>
+                                </li>
+                                <li class="breadcrumb-item active">Favourite</li>
                             </ol>
                         </div>
                     </nav>
@@ -227,94 +217,32 @@ if ((isset($_GET['name'])) && (isset($_GET['email'])) && (isset($_GET['phone']))
     </div>
     <!-- breadcrumb -->
 
-    <!-- Icon-Box Start -->
+    <!-- Section-1 Start -->
     <section class="gen-section-padding-3">
-        <div class="container container-2">
+        <div class="container">
             <div class="row">
-                <!-- <div class="col-xl-4 col-md-6">
-                    <div class="gen-icon-box-style-1">
-                        <div class="gen-icon-box-icon">
-                            <span class="gen-icon-animation">
-                                <i class="fas fa-map-marker-alt"></i></span>
-                        </div>
-                        <div class="gen-icon-box-content">
-                            <h3 class="pt-icon-box-title mb-2">
-                                <span>Our Location</span>
-                            </h3>
-                            <p class="gen-icon-box-description">The Queen's Walk, Bishop's, London SE1 7PB, United
-                                Kingdom</p>
-                        </div>
-                    </div>
-                </div> -->
-                <div class="col-xl-6 col-md-6 mt-4 mt-md-0">
-                    <div class="gen-icon-box-style-1">
-                        <div class="gen-icon-box-icon">
-                            <span class="gen-icon-animation">
-                                <i class="fas fa-phone-alt"></i></span>
-                        </div>
-                        <div class="gen-icon-box-content">
-                            <h3 class="pt-icon-box-title mb-2">
-                                <span>call us at</span>
-                            </h3>
-                            <p class="gen-icon-box-description">+ (91) 8728039991</p>
+                <div class="col-lg-12">
+                    <div class="gen-style-1">
+                        <div class="row all-follower">
+
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-6 col-md-12 mt-4 mt-xl-0">
-                    <div class="gen-icon-box-style-1">
-                        <div class="gen-icon-box-icon">
-                            <span class="gen-icon-animation">
-                                <i class="far fa-envelope"></i></span>
-                        </div>
-                        <div class="gen-icon-box-content">
-                            <h3 class="pt-icon-box-title mb-2">
-                                <span>Mail us</span>
-                            </h3>
-                            <p class="gen-icon-box-description">associations@crypticentertainments.com</p>
+                <div class="col-lg-12" id="lets_hide">
+                    <div class="gen-load-more-button">
+                        <div class="gen-btn-container">
+                            <a class="gen-button gen-button-loadmore"  id="loadMore">
+                                <span class="button-text">Load More</span>
+                                <span class="loadmore-icon" style="display: none;"><i
+                                        class="fa fa-spinner fa-spin"></i></span>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    <!-- Icon-Box End -->
-
-    <!-- Map Start -->
-    <Section class="gen-section-padding-3 gen-top-border">
-        <div class="container container-2">
-            <div class="row">
-                <div class="col-xl-12">
-                    <h2 class="mb-5">get in touch</h2>
-                    <form>
-                        <div class="row gt-form">
-                            <div class="col-md-6 mb-4"><input type="text" name="name" placeholder="Your Name"
-                                    pattern="[a-zA-Z'-'\s]{5,}" title="Minimum 5 letters" required>
-                            </div>
-                            <div class="col-md-6 mb-4"><input type="email" name="email" placeholder="Email" required>
-                            </div>
-                            <div class="col-md-6 mb-4"><input type="text" name="phone" placeholder="Cell Phone"
-                                    pattern="[6-9]{1}[0-9]{9}"
-                                    title="Phone number with 6-9 and remaing 9 digit with 0-9" required>
-                            </div>
-                            <div class="col-md-6 mb-4"><input type="text" name="address" placeholder="Address" required>
-                            </div>
-                            <div class="col-md-12 mb-4"><textarea name="message" rows="6" placeholder="Your Message"
-                                    required></textarea><br>
-                                <input type="submit" value="Send" class="mt-4">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <!-- <div class="col-xl-6">
-                    <div style="width: 100%"><iframe width="100%" height="550" frameborder="0" scrolling="no"
-                            marginheight="0" marginwidth="0"
-                            src="https://maps.google.com/maps?width=100%25&amp;height=550&amp;hl=en&amp;q=+(My%20BusiLondon%20Eye,%20London,%20United%20Kingdomness%20Name)&amp;t=&amp;z=9&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"></iframe>
-                    </div>
-                </div> -->
-            </div>
-        </div>
-    </Section>
-    <!-- Map End -->
+    <!-- Section-1 End -->
 
     <!-- footer start -->
     <footer id="gen-footer">
@@ -427,6 +355,30 @@ if ((isset($_GET['name'])) && (isset($_GET['email'])) && (isset($_GET['phone']))
     </div>
     <!-- Back-to-Top end -->
 
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="background:#333">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="exampleModalCenterTitle">Error !</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h5 style="text-transform:inherit;">You are not a authenticate user to access this Web Series. Please
+                        visit on Rariable and buy a pass to get the access for this series. To get the pass <a id="new_href" style="color:var(--primary-color)">Click here</a> Or
+                        For more information visit plan page now. </h5>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="button button-primary" data-dismiss="modal" value="Close" style="padding:5px 20px;background:#666;">
+                    <input type="button" class="button button-primary" value="Visit Now" style="padding:5px 20px;" onclick="visitPlanPage()">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+
     <!-- js-min -->
     <script src="js/jquery-3.6.0.min.js"></script>
     <script src="js/asyncloader.min.js"></script>
@@ -451,9 +403,123 @@ if ((isset($_GET['name'])) && (isset($_GET['email'])) && (isset($_GET['phone']))
 
     <script src="js/script.js"></script>
 
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/web3modal@1.9.7/dist/index.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js">
+    </script>
+    <script src="./frontend/web3-login.js?v=009">
+    </script>
+    <script src="./frontend/web3-modal.js?v=001"></script>
+    <script src="js/sweetalert/sweetalert.min.js"></script>
+    <script src="js/sweetalert/jquery.sweet-alert.custom.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+    <script>
+    $(document).ready(function() {
+        var currentRow = $('#rowCount').val();
+        var limit = parseInt(10);
+        var row = parseInt($('#rowCount').val());
+        var count = parseInt($('#total_count').val());
+        var user_uid = $('#user_uid').val();
 
+        function loadNow(row, limit, user_uid) {
+            $('.button-text').css("display", "none");
+            $('.loadmore-icon').css("display", "block");
+            $.ajax({
+                type: 'POST',
+                url: 'php/loadMoreFavouriteWebseries.php',
+                data: {
+                    "rowCount": row,
+                    "limit": limit,
+                    "user_uuid": user_uid
+                },
+                success: function(data) {
+                    row = parseInt(row) + parseInt(limit);
+                    $('#rowCount').val(row);
+                    $('.all-follower').append(data);
+                    $('.button-text').css("display", "block");
+                    $('.loadmore-icon').css("display", "none");
+                    if (row >= count) {
+                        $('#lets_hide').css("display", "none");
+                    } else {
+                        $("#lets_hide").val('Load More');
+                    }
+                }
+            });
+        }
+        loadNow(row, limit, user_uid);
+        $('#loadMore').click(function() {
+            row = parseInt($('#rowCount').val());
+            loadNow(row, limit, user_uid);
+        });
+    });
+
+    </script>
+
+<script>
+        // Geting Necessary data
+        function fun2(id) {
+            const token_id = document.getElementById("h" + id).value
+            const web_series_name = document.getElementById("name" + id).value
+            const user_address = document.getElementById("user_address").value
+            const video_uuid = document.getElementById("video_uuid" + id).value
+            document.getElementById("current_token_id").value = token_id
+            document.getElementById("new_href").href = `https://rarible.com/token/polygon/${token_id}?tab=owners`
+            varifySuperPass(token_id, user_address, web_series_name, video_uuid);
+        }
+
+        // Check for super pass
+        const varifySuperPass = async (token_id, loginUserAddress, web_series_name, video_uuid) => {
+            const options = {
+                method: 'GET'
+            };
+            const blockChain = 'POLYGON';
+            const tokenId = token_id;
+            // const otherOption = 'continuation=POLYGON&size=1000';
+            const otherOption = '';
+            try {
+                await fetch(`https://api.rarible.org/v0.1/ownerships/byItem?itemId=${blockChain}:${tokenId}&${otherOption}`, options)
+                    .then(response => response.json())
+                    .then(response => {
+                        const ownerships = response.ownerships;
+                        const passStatus = false;
+                        ownerships.map((value, key) => {
+                            const owner_address = value.owner;
+                            const owner_meta_address = owner_address.split("ETHEREUM:")[1];
+                            if (owner_meta_address === loginUserAddress) {
+                            // if (false) {
+                                $.ajax({
+                                    type: 'POST',
+                                    url: 'php/verifySuperPass.php',
+                                    'async': false,
+                                    dataType: "json",
+                                    data: {
+                                        "web_series_name": web_series_name,
+                                        "video_uuid": video_uuid,
+                                    },
+                                    success: function(data) {
+                                        if (data.status == '201') {
+                                            window.location = `web-series-episodes?video_uuid=${video_uuid}`;
+                                        }
+                                    }
+                                });
+                                passStatus = true;
+                            }
+                        });
+
+                        if (!passStatus) {
+                            $('#exampleModalCenter').modal('show');
+                        }
+                    }).catch(err => console.error(err));
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function visitPlanPage() {
+            window.location.replace("plans.php");
+        }
+    </script>
 </body>
-
-
 
 </html>

@@ -83,7 +83,6 @@ Design and Developed by: Gentechtree.com
         if (jQuery('header').hasClass('gen-header-default')) {
             jQuery(window).scroll(function () {
                 var scrollTop = jQuery(window).scrollTop();
-                console.log(scrollTop);
                 if (scrollTop >= 300) {
                     jQuery('.gen-bottom-header').addClass('gen-header-sticky animated fadeInDown animate__faster');
                 } else {
@@ -94,7 +93,6 @@ Design and Developed by: Gentechtree.com
         if (jQuery('header').hasClass('gen-has-sticky')) {
             jQuery(window).scroll(function () {
                 var scrollTop = jQuery(window).scrollTop();
-                console.log(scrollTop);
                 if (scrollTop >= 300) {
                     jQuery('header').addClass('gen-header-sticky animated fadeInDown animate__faster');
                 } else {
@@ -123,7 +121,7 @@ Design and Developed by: Gentechtree.com
 
         if (jQuery('.tv-show-back-data').length) {
             var url = jQuery('.tv-show-back-data').data('url');
-            console.log(url);
+            // console.log(url);
             var html = '';
             html += `<div class="tv-single-background">
                 <img src="`+ url + `">

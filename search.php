@@ -3,17 +3,18 @@ session_start();
 include("php/link.php");
 $client = 'https://ipfs.fleek.co/ipfs/';
 $user_address = '';
-if(isset($_SESSION['userAddress'])){
-    $user_address = $_SESSION['userAddress'];
+if(isset($_SESSION['crypticUserAddress'])){
+    $user_address = $_SESSION['crypticUserAddress'];
 }else{
     $user_address = '';
+    header("Location:login");
 }
 $current_search_name = '';
 $query = '';
 $total_count = 0;
 if (isset($_GET['query'])) {
       $query = $_GET['query'];
-      $result2 = mysqli_query($con, "SELECT * FROM `video_info` WHERE `name` like '%$query%' OR `video_id` like '%$query%' OR `video_uid` like '%$query%' OR `module` like '%$query%' OR `video_desc` like '%$query%'");
+      $result2 = mysqli_query($con, "SELECT * FROM `video_info` WHERE `name` like '%$query%' OR `video_id` like '%$query%' OR `video_uuid` like '%$query%' OR `module` like '%$query%' OR `video_desc` like '%$query%'");
       if (mysqli_num_rows($result2) > 0) {
         $total_count = mysqli_num_rows($result2);
       }else{
@@ -107,6 +108,9 @@ if (isset($_GET['query'])) {
                                                 <?php }} ?>
                                             </ul>
                                         </li>
+                                        <li class="menu-item">
+                                            <a href="./more-web-series.php" aria-current="page">Web Series</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -141,10 +145,15 @@ if (isset($_GET['query'])) {
                                             </li>
                                             <!-- Library Menu -->
                                             <li>
-                                                <a href="favourite-videos">
-                                                    <i class="fa fa-heart"></i>
-                                                    My Favourite </a>
-                                            </li>
+                                                    <a href="favourite-videos">
+                                                        <i class="fa fa-heart"></i>
+                                                        My Favourite Videos     </a>
+                                                </li>
+                                                <li>
+                                                    <a href="favourite-webseries">
+                                                        <i class="fa fa-heart"></i>
+                                                        My Favourite Webseries</a>
+                                                </li>
                                             <li>
                                                 <a href="logout"><i class="fa fa-sign-out-alt"></i>
                                                     Sign Out </a>
@@ -300,6 +309,9 @@ if (isset($_GET['query'])) {
                                                 href="more-video?module=<?= $rowCat['module_uuid'] ?>"><?= $rowCat['module'] ?></a>
                                         </li>
                                         <?php }} ?>
+                                        <li class="menu-item">
+                                            <a href="./more-web-series.php" aria-current="page">Web Series</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -402,12 +414,10 @@ if (isset($_GET['query'])) {
     <script>
     $(document).ready(function() {
         var currentRow = $('#rowCount').val();
-        console.log(currentRow);
         var limit = parseInt(10);
         var row = parseInt($('#rowCount').val());
         var count = parseInt($('#total_count').val());
         var search_query = $('#search_query').val();
-        console.log(count, 'count');
 
         function loadNow(row, limit, search_query) {
             $('.button-text').css("display", "none");

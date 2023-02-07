@@ -3,10 +3,11 @@ session_start();
 include("php/link.php");
 $client = 'https://ipfs.fleek.co/ipfs/';
 $user_address = '';
-if(isset($_SESSION['userAddress'])){
-    $user_address = $_SESSION['userAddress'];
+if(isset($_SESSION['crypticUserAddress'])){
+    $user_address = $_SESSION['crypticUserAddress'];
 }else{
     $user_address = '';
+    header("Location:login");
 }
 $total_count = 0;
 if (isset($user_address)) {
@@ -24,6 +25,9 @@ if (isset($user_address)) {
 <html lang="en">
 
 <head>
+    <!-- Hidden Input -->
+    <input type="hidden" id="user_address" value="<?php echo $user_address; ?>">
+
     <meta charset="utf-8">
     <!-- Enter a proper description for the page in the meta description tag -->
     <meta name="description"
@@ -104,11 +108,14 @@ if (isset($user_address)) {
                                                 <?php }} ?>
                                             </ul>
                                         </li>
+                                        <li class="menu-item">
+                                            <a href="./more-web-series.php" aria-current="page">Web Series</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
                             <div class="gen-header-info-box">
-                                <div class="gen-menu-search-block">
+                                <!-- <div class="gen-menu-search-block">
                                     <a href="javascript:void(0)" id="gen-seacrh-btn"><i class="fa fa-search"></i></a>
                                     <div class="gen-search-form">
                                         <form role="search" method="get" class="search-form" action="search">
@@ -121,7 +128,7 @@ if (isset($user_address)) {
                                                     class="screen-reader-text"></span></button>
                                         </form>
                                     </div>
-                                </div>
+                                </div> -->
                                 <?php 
                                     if($user_address !== null && $user_address !== ''){
                                 ?>
@@ -138,10 +145,15 @@ if (isset($user_address)) {
                                             </li>
                                             <!-- Library Menu -->
                                             <li>
-                                                <a href="favourite-videos">
-                                                    <i class="fa fa-heart"></i>
-                                                    My Favourite </a>
-                                            </li>
+                                                    <a href="favourite-videos">
+                                                        <i class="fa fa-heart"></i>
+                                                        My Favourite Videos     </a>
+                                                </li>
+                                                <li>
+                                                    <a href="favourite-webseries">
+                                                        <i class="fa fa-heart"></i>
+                                                        My Favourite Webseries</a>
+                                                </li>
                                             <li>
                                                 <a href="logout"><i class="fa fa-sign-out-alt"></i>
                                                     Sign Out </a>
@@ -273,6 +285,9 @@ if (isset($user_address)) {
                                                 href="more-video?module=<?= $rowCat['module_uuid'] ?>"><?= $rowCat['module'] ?></a>
                                         </li>
                                         <?php }} ?>
+                                        <li class="menu-item">
+                                            <a href="./more-web-series.php" aria-current="page">Web Series</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -337,6 +352,31 @@ if (isset($user_address)) {
     </div>
     <!-- Back-to-Top end -->
 
+    <!-- Access Pass Modal Start -->
+    <div class="modal fade" id="access-pass-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="background:#333">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Error !</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h5 style="text-transform:inherit;">You are not a authenticate user to access this video. Please
+                        visit on Rariable and buy a pass to get the access, Thank You. To get the pass <a href="https://rarible.com/token/polygon/0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769?tab=owners" style="color:var(--primary-color)">Click here</a> Or
+                        For more information visit plan page now.</a>
+                    </h5>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="button button-primary" data-dismiss="modal" value="Close" style="padding:5px 20px;background:#666;">
+                    <input type="button" class="button button-primary" value="Visit Now" style="padding:5px 20px;" onclick="visitPlanPage()">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Access Pass Modal End -->
+
     <!-- js-min -->
     <script src="js/jquery-3.6.0.min.js"></script>
     <script src="js/asyncloader.min.js"></script>
@@ -375,7 +415,6 @@ if (isset($user_address)) {
     <script>
     $(document).ready(function() {
         var currentRow = $('#rowCount').val();
-        console.log(currentRow);
         var limit = parseInt(10);
         var row = parseInt($('#rowCount').val());
         var count = parseInt($('#total_count').val());
@@ -412,6 +451,58 @@ if (isset($user_address)) {
             loadNow(row, limit, user_uid);
         });
     });
+
+    const CheckForAccessPass = async () => {
+            const user_address = document.getElementById("user_address").value
+            const tokenId = '0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769';
+            const options = {
+                method: 'GET'
+            };
+            const blockChain = 'POLYGON';
+            // const otherOption = 'continuation=POLYGON&size=1000';
+            const otherOption = '';
+            try {
+                await fetch(`https://api.rarible.org/v0.1/ownerships/byItem?itemId=${blockChain}:${tokenId}&${otherOption}`, options)
+                    .then(response => response.json())
+                    .then(response => {
+                        const ownerships = response.ownerships;
+                        let passStatus = false;
+                        ownerships.map((value, key) => {
+                            const owner_address = value.owner;
+                            const owner_meta_address = owner_address.split("ETHEREUM:")[1];
+                            if (owner_meta_address === user_address) {
+                            // if (false) {
+                                $.ajax({
+                                    type: 'POST',
+                                    url: 'php/verifyAccessPass.php',
+                                    'async': false,
+                                    dataType: "json",
+                                    data: {
+                                        "user_address": user_address,
+                                    },
+                                    success: function(data) {
+                                        if (data.status == '201') {
+                                            console.log("Access Pass verified");
+                                            window.location.reload();
+                                        }
+                                    }
+                                });
+                                passStatus = true;
+                            }
+                        });
+
+                        if (!passStatus) {
+                            $("#access-pass-modal").modal('show');
+                        }
+                    }).catch(err => console.error(err));
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function visitPlanPage() {
+            window.location.replace("plans.php");
+        }
     </script>
 </body>
 

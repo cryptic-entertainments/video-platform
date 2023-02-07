@@ -3,29 +3,29 @@ session_start();
 include("php/link.php");
 $client = 'https://ipfs.fleek.co/ipfs/';
 $user_address = '';
-if(isset($_SESSION['crypticUserAddress'])){
+if (isset($_SESSION['crypticUserAddress'])) {
     $user_address = $_SESSION['crypticUserAddress'];
-}else{
+} else {
     $user_address = '';
     header("Location:login");
 }
-$current_module_name = '';
-$module = '';
+// $current_module_name = '';
+// $module = '';
 $total_count = 0;
-if (isset($_GET['module'])) {
-      $module = $_GET['module'];
-      $result2 = mysqli_query($con, "SELECT * FROM `video_info` WHERE `module_uuid` = '$module'");
-      if (mysqli_num_rows($result2) > 0) {
-        $total_count = mysqli_num_rows($result2);
-        while ($row2 = mysqli_fetch_assoc($result2)) {
-            $current_module_name = $row2['module'];
-        }
-      }else{
-        header("Location: index");        
-      }
-   } else {
-      header("Location: /");
-   }
+// if (isset($_GET['module'])) {
+//       $module = $_GET['module'];
+//       $result2 = mysqli_query($con, "SELECT * FROM `video_info` WHERE `module_uuid` = '$module'");
+//       if (mysqli_num_rows($result2) > 0) {
+//         $total_count = mysqli_num_rows($result2);
+//         while ($row2 = mysqli_fetch_assoc($result2)) {
+//             $current_module_name = $row2['module'];
+//         }
+//       }else{
+//         header("Location: index");        
+//       }
+//    } else {
+//       header("Location: /");
+//    } 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,8 +33,7 @@ if (isset($_GET['module'])) {
 <head>
     <meta charset="utf-8">
     <!-- Enter a proper description for the page in the meta description tag -->
-    <meta name="description"
-        content="Home to directors, editors, musicians, cinematographers, illustrators, producers, and other geeky, cool, misfits tied together by our one true love—Crypto">
+    <meta name="description" content="Home to directors, editors, musicians, cinematographers, illustrators, producers, and other geeky, cool, misfits tied together by our one true love—Crypto">
 
     <!-- Enter a keywords for the page in tag -->
     <meta name="Keywords" content="">
@@ -46,8 +45,7 @@ if (isset($_GET['module'])) {
     <meta property="og:url" content="https://platform.crypticentertainments.com" />
 
     <!-- Enter page description -->
-    <meta property="og:description"
-        content="Home to directors, editors, musicians, cinematographers, illustrators, producers, and other geeky, cool, misfits tied together by our one true love—Crypto">
+    <meta property="og:description" content="Home to directors, editors, musicians, cinematographers, illustrators, producers, and other geeky, cool, misfits tied together by our one true love—Crypto">
 
     <!-- Enter Logo image URL for example : http://cryptonite.finstreet.in/images/cryptonitepost.png -->
     <meta property="og:image" itemprop="image" content="https://platform.crypticentertainments.com/images/logo-1.png" />
@@ -69,8 +67,11 @@ if (isset($_GET['module'])) {
 </head>
 
 <body>
+
     <!-- Hidden Inputs -->
     <input type="hidden" id="user_address" value="<?php echo $user_address; ?>">
+    <input type="hidden" name="current_token_id" id="current_token_id">
+
 
     <!--=========== Loader =============-->
     <div id="gen-loading">
@@ -100,17 +101,17 @@ if (isset($_GET['module'])) {
                                             <a href="#">Videos</a>
                                             <i class="fa fa-chevron-down gen-submenu-icon"></i>
                                             <ul class="sub-menu">
-                                                <?php 
+                                                <?php
                                                 $queryCat = "SELECT DISTINCT `module`,`module_uuid` FROM `video_info`;";
                                                 $resultCat = mysqli_query($con, $queryCat);
                                                 if (mysqli_num_rows($resultCat) > 0) {
-                                                    while ($rowCat = mysqli_fetch_assoc($resultCat)) {      
-                                            ?>
-                                                <li class="menu-item">
-                                                    <a
-                                                        href="more-video?module=<?= $rowCat['module_uuid'] ?>"><?= $rowCat['module'] ?></a>
-                                                </li>
-                                                <?php }} ?>
+                                                    while ($rowCat = mysqli_fetch_assoc($resultCat)) {
+                                                ?>
+                                                        <li class="menu-item">
+                                                            <a href="more-video?module=<?= $rowCat['module_uuid'] ?>"><?= $rowCat['module'] ?></a>
+                                                        </li>
+                                                <?php }
+                                                } ?>
                                             </ul>
                                         </li>
                                         <li class="menu-item">
@@ -126,30 +127,27 @@ if (isset($_GET['module'])) {
                                         <form role="search" method="get" class="search-form" action="search">
                                             <label>
                                                 <span class="screen-reader-text"></span>
-                                                <input type="search" class="search-field" placeholder="Search …"
-                                                    value="" name="query">
+                                                <input type="search" class="search-field" placeholder="Search …" value="" name="query">
                                             </label>
-                                            <button type="submit" class="search-submit"><span
-                                                    class="screen-reader-text"></span></button>
+                                            <button type="submit" class="search-submit"><span class="screen-reader-text"></span></button>
                                         </form>
                                     </div>
                                 </div>
-                                <?php 
-                                    if($user_address !== null && $user_address !== ''){
+                                <?php
+                                if ($user_address !== null && $user_address !== '') {
                                 ?>
-                                <div class="gen-account-holder">
-                                    <a href="javascript:void(0)" id="gen-user-btn"><i class="fa fa-user"></i></a>
-                                    <div class="gen-account-menu">
-                                        <ul class="gen-account-menu">
-                                            <!-- Pms Menu -->
-                                            <li>
-                                                <a href="https://rinkeby.etherscan.io/address/<?= $user_address ?>"><i
-                                                        class="fa fa-user"></i>
-                                                    <?php echo substr($user_address, 0, 5) ?>...<?php echo substr($user_address, -5) ?>
-                                                </a>
-                                            </li>
-                                            <!-- Library Menu -->
-                                            <li>
+                                    <div class="gen-account-holder">
+                                        <a href="javascript:void(0)" id="gen-user-btn"><i class="fa fa-user"></i></a>
+                                        <div class="gen-account-menu">
+                                            <ul class="gen-account-menu">
+                                                <!-- Pms Menu -->
+                                                <li>
+                                                    <a href="https://rinkeby.etherscan.io/address/<?= $user_address ?>"><i class="fa fa-user"></i>
+                                                        <?php echo substr($user_address, 0, 5) ?>...<?php echo substr($user_address, -5) ?>
+                                                    </a>
+                                                </li>
+                                                <!-- Library Menu -->
+                                                <li>
                                                     <a href="favourite-videos">
                                                         <i class="fa fa-heart"></i>
                                                         My Favourite Videos     </a>
@@ -159,27 +157,25 @@ if (isset($_GET['module'])) {
                                                         <i class="fa fa-heart"></i>
                                                         My Favourite Webseries</a>
                                                 </li>
-                                            <li>
-                                                <a href="logout"><i class="fa fa-sign-out-alt"></i>
-                                                    Sign Out </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <?php }else{ ?>
-                                <div class="gen-btn-container">
-                                    <a href="javascript:void(0)" class="gen-button" onclick="userLoginOut()">
-                                        <div class="gen-button-block">
-                                            <span class="gen-button-line-left"></span>
-                                            <span class="gen-button-text text-capitalize">Sign In</span>
+                                                <li>
+                                                    <a href="logout"><i class="fa fa-sign-out-alt"></i>
+                                                        Sign Out </a>
+                                                </li>
+                                            </ul>
                                         </div>
-                                    </a>
-                                </div>
+                                    </div>
+                                <?php } else { ?>
+                                    <div class="gen-btn-container">
+                                        <a href="javascript:void(0)" class="gen-button" onclick="userLoginOut()">
+                                            <div class="gen-button-block">
+                                                <span class="gen-button-line-left"></span>
+                                                <span class="gen-button-text text-capitalize">Sign In</span>
+                                            </div>
+                                        </a>
+                                    </div>
                                 <?php } ?>
                             </div>
-                            <button class="navbar-toggler" type="button" data-toggle="collapse"
-                                data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                                aria-expanded="false" aria-label="Toggle navigation">
+                            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                                 <i class="fas fa-bars"></i>
                             </button>
                         </nav>
@@ -190,29 +186,40 @@ if (isset($_GET['module'])) {
     </header>
     <!--========== Header ==============-->
 
-    <!-- breadcrumb -->
-    <div class="gen-breadcrumb" style="background-image: url('images/background/asset-25.jpg');">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-12">
-                    <nav aria-label="breadcrumb">
-                        <div class="gen-breadcrumb-title">
-                            <h1>
-                                <?= $current_module_name ?>
-                            </h1>
+    <?php
+    $query = "SELECT DISTINCT name_of_web_series, web_series_thumb, module_uuid, module, subscription_type FROM `web_series_info`;";
+    $result = mysqli_query($con, $query);
+    $total_count = mysqli_num_rows($result);
+    $row = mysqli_fetch_assoc($result);
+    $name_of_web_series = $row['name_of_web_series'];
+    $web_series_thumb = $row['web_series_thumb'];
+    $module = $row['module_uuid'];
+    $module_name = $row['module'];
+    $subscription_type = $row['subscription_type'];
+    ?>
+     <!-- breadcrumb -->
+            <div class="gen-breadcrumb" style="background-image: url('images/background/asset-25.jpg');">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-lg-12">
+                            <nav aria-label="breadcrumb">
+                                <div class="gen-breadcrumb-title">
+                                    <h1>
+                                        <?= $module_name ?>
+                                    </h1>
+                                </div>
+                                <div class="gen-breadcrumb-container">
+                                    <ol class="breadcrumb">
+                                        <li class="breadcrumb-item"><a href="/"><i class="fas fa-home mr-2"></i>Home</a>
+                                        </li>
+                                        <li class="breadcrumb-item active"><?= $module_name ?></li>
+                                    </ol>
+                                </div>
+                            </nav>
                         </div>
-                        <div class="gen-breadcrumb-container">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home mr-2"></i>Home</a>
-                                </li>
-                                <li class="breadcrumb-item active"><?= $current_module_name ?></li>
-                            </ol>
-                        </div>
-                    </nav>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
+            </div>  
     <!-- breadcrumb -->
 
     <!-- Section-1 Start -->
@@ -235,8 +242,7 @@ if (isset($_GET['module'])) {
                         <div class="gen-btn-container">
                             <a class="gen-button gen-button-loadmore" id="loadMore">
                                 <span class="button-text">Load More</span>
-                                <span class="loadmore-icon" style="display: none;"><i
-                                        class="fa fa-spinner fa-spin"></i></span>
+                                <span class="loadmore-icon" style="display: none;"><i class="fa fa-spinner fa-spin"></i></span>
                             </a>
                         </div>
                     </div>
@@ -262,11 +268,9 @@ if (isset($_GET['module'])) {
                                             illustrators, producers, and other geeky, cool, misfits
                                             tied together by our one true love—Crypto.
                                         </p>
-                                        <ul class="social-link">                                            
-                                            <li><a href="https://www.instagram.com/crypticentertainments/"
-                                                    class="facebook"><i class="fab fa-instagram"></i></a></li>                                            
-                                            <li><a href="https://twitter.com/Cryptic_Media" class="facebook"><i
-                                                        class="fab fa-twitter"></i></a></li>
+                                        <ul class="social-link">
+                                            <li><a href="https://www.instagram.com/crypticentertainments/" class="facebook"><i class="fab fa-instagram"></i></a></li>
+                                            <li><a href="https://twitter.com/Cryptic_Media" class="facebook"><i class="fab fa-twitter"></i></a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -280,16 +284,16 @@ if (isset($_GET['module'])) {
                                         <li class="menu-item">
                                             <a href="/" aria-current="page">Home</a>
                                         </li>
-                                        <?php 
-                                                $queryCat = "SELECT DISTINCT `module`,`module_uuid` FROM `video_info`;";
-                                                $resultCat = mysqli_query($con, $queryCat);
-                                                if (mysqli_num_rows($resultCat) > 0) {
-                                                    while ($rowCat = mysqli_fetch_assoc($resultCat)) {      
-                                            ?>
-                                        <li class="menu-item"><a
-                                                href="more-video?module=<?= $rowCat['module_uuid'] ?>"><?= $rowCat['module'] ?></a>
-                                        </li>
-                                        <?php }} ?>
+                                        <?php
+                                        $queryCat = "SELECT DISTINCT `module`,`module_uuid` FROM `video_info`;";
+                                        $resultCat = mysqli_query($con, $queryCat);
+                                        if (mysqli_num_rows($resultCat) > 0) {
+                                            while ($rowCat = mysqli_fetch_assoc($resultCat)) {
+                                        ?>
+                                                <li class="menu-item"><a href="more-video?module=<?= $rowCat['module_uuid'] ?>"><?= $rowCat['module'] ?></a>
+                                                </li>
+                                        <?php }
+                                        } ?>
                                         <li class="menu-item">
                                             <a href="./more-web-series.php" aria-current="page">Web Series</a>
                                         </li>
@@ -357,23 +361,20 @@ if (isset($_GET['module'])) {
     </div>
     <!-- Back-to-Top end -->
 
-    <!-- Access Pass Modal Start -->
-    <div class="modal fade" id="access-pass-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content" style="background:#333">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle">Error !</h5>
+                    <h3 class="modal-title" id="exampleModalCenterTitle">Error !</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                <h5 style="text-transform:inherit;">You are not a authenticate user to access this video. Please
-                        visit on Rariable and buy a pass to get the access, Thank You. To get the pass <a
-                            href="https://rarible.com/token/polygon/0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769?tab=owners"
-                            style="color:var(--primary-color)">Click here</a> Or
-                        For more information visit plan page now.</a>
-                    </h5>
+                    <h5 style="text-transform:inherit;">You are not a authenticate user to access this Web Series. Please
+                        visit on Rariable and buy a pass to get the access for this series. To get the pass <a id="new_href" style="color:var(--primary-color)">Click here</a> Or
+                        For more information visit plan page now. </h5>
                 </div>
                 <div class="modal-footer">
                     <input type="button" class="button button-primary" data-dismiss="modal" value="Close" style="padding:5px 20px;background:#666;">
@@ -382,7 +383,7 @@ if (isset($_GET['module'])) {
             </div>
         </div>
     </div>
-    <!-- Access Pass Modal End -->
+    <!-- Modal -->
 
     <!-- js-min -->
     <script src="js/jquery-3.6.0.min.js"></script>
@@ -420,52 +421,63 @@ if (isset($_GET['module'])) {
     <script src="js/sweetalert/jquery.sweet-alert.custom.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
     <script>
-    $(document).ready(function() {
-        var currentRow = $('#rowCount').val();
-        var limit = parseInt(10);
-        var row = parseInt($('#rowCount').val());
-        var count = parseInt($('#total_count').val());
-        var module_uid = $('#module_uid').val();
+        $(document).ready(function() {
+            var currentRow = $('#rowCount').val();
+            var limit = parseInt(10);
+            var row = parseInt($('#rowCount').val());
+            var count = parseInt($('#total_count').val());
+            var module_uid = $('#module_uid').val();
 
-        function loadNow(row, limit, module_uid) {
-            $('.button-text').css("display", "none");
-            $('.loadmore-icon').css("display", "block");
-            $.ajax({
-                type: 'POST',
-                url: 'php/loadMoreVideoData.php',
-                data: {
-                    "rowCount": row,
-                    "limit": limit,
-                    "module_uuid": module_uid
-                },
-                success: function(data) {
-                    row = parseInt(row) + parseInt(limit);
-                    $('#rowCount').val(row);
-                    $('.all-follower').append(data);
-                    $('.button-text').css("display", "block");
-                    $('.loadmore-icon').css("display", "none");
-                    if (row >= count) {
-                        $('#lets_hide').css("display", "none");
-                    } else {
-                        $("#lets_hide").val('Load More');
+            function loadNow(row, limit, module_uid) {
+                $('.button-text').css("display", "none");
+                $('.loadmore-icon').css("display", "block");
+                $.ajax({
+                    type: 'POST',
+                    url: 'php/loadMoreWebSeriesData.php',
+                    data: {
+                        "rowCount": row,
+                        "limit": limit,
+                        "module_uuid": module_uid
+                    },
+                    success: function(data) {
+                        row = parseInt(row) + parseInt(limit);
+                        $('#rowCount').val(row);
+                        $('.all-follower').append(data);
+                        $('.button-text').css("display", "block");
+                        $('.loadmore-icon').css("display", "none");
+                        if (row >= count) {
+                            $('#lets_hide').css("display", "none");
+                        } else {
+                            $("#lets_hide").val('Load More');
+                        }
                     }
-                }
-            });
-        }
-        loadNow(row, limit, module_uid);
-        $('#loadMore').click(function() {
-            row = parseInt($('#rowCount').val());
+                });
+            }
             loadNow(row, limit, module_uid);
+            $('#loadMore').click(function() {
+                row = parseInt($('#rowCount').val());
+                loadNow(row, limit, module_uid);
+            });
         });
-    });
+    </script>
 
-    const CheckForAccessPass = async () => {
+    <script>
+        function fun(id) {
+            const token_id = document.getElementById("h" + id).value
+            const web_series_name = document.getElementById("name" + id).value
             const user_address = document.getElementById("user_address").value
-            const tokenId = '0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769';
+            const video_uuid = document.getElementById("video_uuid" + id).value
+            document.getElementById("current_token_id").value = token_id
+            document.getElementById("new_href").href = `https://rarible.com/token/polygon/${token_id}?tab=owners`
+            varifySuperPass(token_id, user_address, web_series_name, video_uuid);
+        }
+
+        const varifySuperPass = async (token_id, loginUserAddress, web_series_name, video_uuid) => {
             const options = {
                 method: 'GET'
             };
             const blockChain = 'POLYGON';
+            const tokenId = token_id;
             // const otherOption = 'continuation=POLYGON&size=1000';
             const otherOption = '';
             try {
@@ -473,24 +485,24 @@ if (isset($_GET['module'])) {
                     .then(response => response.json())
                     .then(response => {
                         const ownerships = response.ownerships;
-                        let passStatus = false;
+                        const passStatus = false;
                         ownerships.map((value, key) => {
                             const owner_address = value.owner;
                             const owner_meta_address = owner_address.split("ETHEREUM:")[1];
-                            if (owner_meta_address === user_address) {
+                            if (owner_meta_address === loginUserAddress) {
                             // if (false) {
                                 $.ajax({
                                     type: 'POST',
-                                    url: 'php/verifyAccessPass.php',
+                                    url: 'php/verifySuperPass.php',
                                     'async': false,
                                     dataType: "json",
                                     data: {
-                                        "user_address": user_address,
+                                        "web_series_name": web_series_name,
+                                        "video_uuid": video_uuid,
                                     },
                                     success: function(data) {
                                         if (data.status == '201') {
-                                            console.log("Access Pass verified");
-                                            window.location.reload();
+                                            window.location = `web-series-episodes?video_uuid=${video_uuid}`;
                                         }
                                     }
                                 });
@@ -499,7 +511,7 @@ if (isset($_GET['module'])) {
                         });
 
                         if (!passStatus) {
-                            $("#access-pass-modal").modal('show');
+                            $('#exampleModalCenter').modal('show');
                         }
                     }).catch(err => console.error(err));
             } catch (err) {
@@ -507,9 +519,16 @@ if (isset($_GET['module'])) {
             }
         }
 
-        function visitPlanPage(){
+        function visitPlanPage() {
             window.location.replace("plans.php");
         }
+
+        // function buySuperPass() {
+        //     const token_id = document.getElementById("current_token_id").value
+        //     window.location.replace(
+        //         `https://rarible.com/token/polygon/${token_id}?tab=owners`, "_blank"
+        //     );
+        // }
     </script>
 </body>
 

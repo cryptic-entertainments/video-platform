@@ -14,24 +14,24 @@ if (isset($_SESSION['crypticUserAddress'])) {
 if (isset($_POST['rowCount'])) {
     $rowCount = mysqli_real_escape_string($con, $_POST['rowCount']);
     $limitRow = mysqli_real_escape_string($con, $_POST['limit']);
-    $user_address = mysqli_real_escape_string($con, $_POST['user_uuid']);
+    $module_uid = mysqli_real_escape_string($con, $_POST['module_uuid']);
 
-    $query = "SELECT * FROM `favourite_videos` INNER JOIN `video_info` ON `favourite_videos`.`video_info_id`=`video_info`.`video_uuid` WHERE `user_id`= '$user_address' ORDER BY `favourite_videos`.`favourite_video_id` DESC limit $rowCount,$limitRow";
+    $query = "SELECT DISTINCT * FROM `web_series_info` WHERE `module_uuid`= '$module_uid' limit $rowCount,$limitRow";
     $result = mysqli_query($con, $query);
     if (mysqli_num_rows($result) > 0) {
-        $i = 1;
+        $i = 1 + $rowCount;
         while ($row = mysqli_fetch_assoc($result)) {
-            $thumbnail_other = $client . $row['thumbnail_ipfs'];
-            $video_id_other = $row['video_uuid'];
-            $chapter_part_other = $row['video_id'];
-            $chapter_name_other = $row['name'];
-            $chapter_id_other = $row['video_id'];
+            $thumbnail_other = $client . $row['web_series_thumb'];
+            $chapter_part_other = $row['web_series_id'];
+            $chapter_name_other = $row['name_of_web_series'];
+            $chapter_id_other = $row['web_series_id'];
             $module_name_other = $row['module'];
             $module_other = $row['module_uuid'];
-            $video_uuid_other = $row['video_uuid'];
+            $video_uuid_other = $row['web_series_uuid'];
+            $token_id_other = $row['token_id'];
             $from_time = $row['from_time'];
             $date = date_create($from_time);
-            $published_date = date_format($date, "d M,Y");
+            $published_date = date_format($date, "d M, Y");
 ?>
             <div class="col-xl-3 col-lg-4 col-md-6">
                 <div class="gen-carousel-movies-style-1 movie-grid style-1">
@@ -41,7 +41,7 @@ if (isset($_POST['rowCount'])) {
                             <div class="gen-movie-add">
                                 <div class="wpulike wpulike-heart">
                                     <div class="wp_ulike_general_class wp_ulike_is_not_liked">
-                                        <button type="button" class="wp_ulike_btn wp_ulike_put_image" onclick="removeVid('<?= $user_address ?>','<?= $video_uuid_other ?>')"></button>
+                                        <button type="button" class="wp_ulike_btn wp_ulike_put_image" onclick="addFavouriteWebseries('<?= $video_uuid_other ?>','<?= $user_address ?>')"></button>
                                     </div>
                                 </div>
                                 <ul class="menu bottomRight">
@@ -60,50 +60,85 @@ if (isset($_POST['rowCount'])) {
                                 </ul>
                             </div>
                             <?php
-                            if ($access_pass != "" || $premium_pass != "") {
+                            if ($premium_pass == "verified_premium_pass") {
                             ?>
                                 <div class="gen-movie-action">
-                                    <a href="single-movie?course=<?= $video_id_other ?>&module=<?= $module_other ?>" class="gen-button">
+                                    <a href="web-series-episodes?video_uuid=<?= $video_uuid_other ?>" class="gen-button">
                                         <i class="fa fa-play"></i>
                                     </a>
                                 </div>
                         </div>
                         <div class="gen-info-contain">
                             <div class="gen-movie-info">
-                                <h3><a href="single-movie?course=<?= $video_id_other ?>&module=<?= $module_other ?>"><?= $chapter_name_other ?></a>
+                                <h3><a href="web-series-episodes?video_uuid=<?= $video_uuid_other ?>"><?= $chapter_name_other ?></a>
                                 </h3>
                             </div>
                         <?php
-                            } else {
+                            } else if (empty($_SESSION['superPass'])) {
                         ?>
                             <div class="gen-movie-action">
-                                <button class="gen-button" onclick="CheckForAccessPass()">
+                                <button class="gen-button" id="token_id<?= $chapter_id_other ?>" onclick="fun(this.id)">
+                                    <input type="hidden" name="token_id<?= $chapter_id_other ?>" id="htoken_id<?= $chapter_id_other ?>" value="<?= $token_id_other ?>">
+                                    <input type="hidden" name="nametoken_id<?= $chapter_id_other ?>" id="nametoken_id<?= $chapter_id_other ?>" value="<?= $chapter_name_other ?>">
+                                    <input type="hidden" name="video_uuidtoken_id<?= $chapter_id_other ?>" id="video_uuidtoken_id<?= $chapter_id_other ?>" value="<?= $video_uuid_other ?>">
                                     <i class="fa fa-play"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="gen-info-contain">
                             <div class="gen-movie-info">
-                                <h3><a onclick="CheckForAccessPass()"><?= $chapter_name_other ?></a>
+                                <h3 style="cursor: default;"><span><?= $chapter_name_other ?></span>
+                                </h3>
+                            </div>
+                            <?php
+                            } else {
+                                if ($_SESSION['superPass'] == in_array($chapter_name_other, $_SESSION['superPass'])) {
+                            ?>
+                                <div class="gen-movie-action">
+                                    <a href="web-series-episodes?video_uuid=<?= $video_uuid_other ?>" class="gen-button">
+                                        <i class="fa fa-play"></i>
+                                    </a>
+                                </div>
+                        </div>
+                        <div class="gen-info-contain">
+                            <div class="gen-movie-info">
+                                <h3><a href="web-series-episodes?video_uuid=<?= $video_uuid_other ?>"><?= $chapter_name_other ?></a>
                                 </h3>
                             </div>
                         <?php
-                            }
+                                } else {
                         ?>
-                        <div class="gen-movie-meta-holder">
-                            <ul>
-                                <li><?= $published_date ?></li>
-                                <li>
-                                <a href="more-video?module=<?= $module_other ?>"><span><?= $module_name_other ?></span></a>
-                                </li>
-                            </ul>
+                            <div class="gen-movie-action">
+                                <button class="gen-button" id="token_id<?= $chapter_id_other ?>" onclick="fun(this.id)">
+                                    <input type="hidden" name="token_id<?= $chapter_id_other ?>" id="htoken_id<?= $chapter_id_other ?>" value="<?= $token_id_other ?>">
+                                    <input type="hidden" name="nametoken_id<?= $chapter_id_other ?>" id="nametoken_id<?= $chapter_id_other ?>" value="<?= $chapter_name_other ?>">
+                                    <input type="hidden" name="video_uuidtoken_id<?= $chapter_id_other ?>" id="video_uuidtoken_id<?= $chapter_id_other ?>" value="<?= $video_uuid_other ?>">
+                                    <i class="fa fa-play"></i>
+                                </button>
+                            </div>
                         </div>
+                        <div class="gen-info-contain">
+                            <div class="gen-movie-info">
+                                <h3 style="cursor: default;"><span><?= $chapter_name_other ?></span>
+                                </h3>
+                            </div>
+                    <?php
+                                }
+                            }
+                    ?>
+                    <div class="gen-movie-meta-holder">
+                        <ul>
+                            <li><?= $published_date ?></li>
+                            <li>
+                                <a href="more-web-series.php"><span><?= $module_name_other ?></span></a>
+                            </li>
+                        </ul>
+                    </div>
                         </div>
                     </div>
                 </div>
             </div>
-<?php
-            $i = $i + 1;
+<?php $i = $i + 1;
         }
     }
 }

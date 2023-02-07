@@ -4,10 +4,10 @@ let userLoginData = {
   buttonText: "Log in",
   publicName: "",
   JWT: "",
-  config: { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+  config: { headers: { "Content-Type": "application/json" } }
 }
 
-if (typeof(backendPath) == 'undefined') {
+if (typeof (backendPath) == 'undefined') {
   var backendPath = '';
 }
 
@@ -26,7 +26,7 @@ const ethEnabled = async () => {
 function ethInit() {
   ethereum.on('accountsChanged', (_chainId) => ethNetworkUpdate());
 
-  async function ethNetworkUpdate() {      
+  async function ethNetworkUpdate() {
     let accountsOnEnable = await web3.eth.getAccounts();
     let address = accountsOnEnable[0];
     address = address.toLowerCase();
@@ -48,7 +48,7 @@ function ethInit() {
 
 // Show current msg
 function showMsg(id) {
-  console.log(id);
+  // console.log(id);
 }
 
 
@@ -64,12 +64,12 @@ function showButtonText() {
   var slides = document.getElementsByClassName("buttonText");
   for (var i = 0; i < slides.length; i++) {
     document.getElementsByClassName('buttonText')[i].innerHTML = userLoginData.buttonText;
-  }  
+  }
 }
 
 
 async function userLoginOut() {
-  if(userLoginData.state == "loggedOut" || userLoginData.state == "needMetamask") {
+  if (userLoginData.state == "loggedOut" || userLoginData.state == "needMetamask") {
     await onConnectLoadWeb3Modal();
   }
   if (web3ModalProv) {
@@ -104,7 +104,7 @@ async function userLogin() {
     showMsg(userLoginData.state);
     return;
   }
-  if(window.ethereum.networkVersion) {
+  if (window.ethereum.networkVersion) {
     await abcnew();
   }
   let accountsOnEnable = await web3.eth.getAccounts();
@@ -119,74 +119,76 @@ async function userLogin() {
   showMsg(userLoginData.state);
 
   axios.post(
-    backendPath+"backend/server.php",
+    backendPath + "backend/server.php",
     {
       request: "login",
       address: address
     },
     userLoginData.config
   )
-  .then(function(response) {
-    if (response.data.substring(0, 5) != "Error") {
-      let message = response.data;
-      let publicAddress = address;
-      handleSignMessage(message, publicAddress).then(handleAuthenticate);
+    .then(function (response) {
+      if (response.data.substring(0, 5) != "Error") {
+        let message = response.data;
+        let publicAddress = address;
+        handleSignMessage(message, publicAddress).then(handleAuthenticate);
 
-      function handleSignMessage(message, publicAddress) {
-        return new Promise((resolve, reject) =>  
-          web3.eth.personal.sign(
-            web3.utils.utf8ToHex(message),
-            publicAddress,
-            (err, signature) => {
-              if (err) {
-                userLoginData.state = "loggedOut";
-                showMsg(userLoginData.state);
+        function handleSignMessage(message, publicAddress) {
+          return new Promise((resolve, reject) =>
+            web3.eth.personal.sign(
+              web3.utils.utf8ToHex(message),
+              publicAddress,
+              (err, signature) => {
+                if (err) {
+                  userLoginData.state = "loggedOut";
+                  showMsg(userLoginData.state);
+                }
+                return resolve({ publicAddress, signature });
               }
-              return resolve({ publicAddress, signature });
-            }
-          )
-        );
-      }
+            )
+          );
+        }
 
-      function handleAuthenticate({ publicAddress, signature }) {
-        axios
-          .post(
-            backendPath+"backend/server.php",
-            {
-              request: "auth",
-              address: arguments[0].publicAddress,
-              signature: arguments[0].signature
-            },
-            userLoginData.config
-          )
-          .then(function(response) {
-            if (response.data[0] == "Success") {
-              userLoginData.state = "loggedIn";
-              showMsg(userLoginData.state);
-              userLoginData.buttonText = "Log out";
-              showButtonText();
-              userLoginData.ethAddress = address;
-              showAddress();
-              userLoginData.publicName = response.data[1];
-              // getPublicName();
-              userLoginData.JWT = response.data[2];
-              // Clear Web3 wallets data for logout
-              localStorage.clear();
-            }
-          })
-          .catch(function(error) {
-            console.error(error);
-          });
+        function handleAuthenticate({ publicAddress, signature }) {
+          axios
+            .post(
+              backendPath + "backend/server.php",
+              {
+                request: "auth",
+                address: arguments[0].publicAddress,
+                signature: arguments[0].signature
+              },
+              userLoginData.config
+            )
+            .then(function (response) {
+              if (response.data[0] == "Success") {
+                userLoginData.state = "loggedIn";
+                showMsg(userLoginData.state);
+                userLoginData.buttonText = "Log out";
+                showButtonText();
+                userLoginData.ethAddress = address;
+                showAddress();
+                userLoginData.publicName = response.data[1];
+                // getPublicName();
+                userLoginData.JWT = response.data[2];
+                // Clear Web3 wallets data for logout
+                localStorage.clear();
+              }
+            })
+            .catch(function (error) {
+              console.error(error);
+            });
+        }
+
+
       }
-    } 
-    else {
-      console.log("Error: " + response.data);
-    }
-  })
-  .catch(function(error) {
-    console.error(error);
-  });
-} 
+      else {
+        console.log("Error: " + response.data);
+      }
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
+}
 
 
 function getPublicName() {
@@ -197,7 +199,7 @@ function getPublicName() {
 function setPublicName() {
   // let value = document.getElementById('updatePublicName').value;
   axios.post(
-    backendPath+"backend/server.php",
+    backendPath + "backend/server.php",
     {
       request: "updatePublicName",
       address: userLoginData.ethAddress,
@@ -206,15 +208,36 @@ function setPublicName() {
     },
     this.config
   )
-  .then(function(response) {
-    console.log(response.data);
-    // window.location.replace("./register");
-    window.location.reload();
-  })
-  .catch(function(error) {
-    console.error(error);
-  });
+    .then(function (response) {
+      getLogin(userLoginData.ethAddress);
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
 }
+
+const getLogin = async (loginUserAddress) => {
+  $.ajax({
+    type: 'POST',
+    url: 'php/userAuthModal.php',
+    'async': false,
+    dataType: "json",
+    data: {
+      "user_address": loginUserAddress,
+    },
+    success: async function (data) {
+      if (data.status == '201') {
+        console.log("Success");
+        await verifyAccessPass(loginUserAddress);
+        await verifyPremiumPass(loginUserAddress);
+      }
+      window.location.reload();
+    }
+  });
+
+
+}
+
 
 //new code enter
 async function abcnew() {
@@ -233,3 +256,89 @@ async function abcnew() {
   // }
 }
 //new code end
+
+
+// Chcek for Access Pass at the time of LOgin
+const verifyAccessPass = async (loginUserAddress) => {
+  const options = { method: 'GET' };
+  // https://rarible.com/token/polygon/0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769?tab=owners
+  const blockChain = 'POLYGON';
+  const tokenId = '0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769';
+  // const otherOption = 'continuation=POLYGON&size=1000';
+  const otherOption = '';
+  try {
+    await fetch(`https://api.rarible.org/v0.1/ownerships/byItem?itemId=${blockChain}:${tokenId}&${otherOption}`, options)
+      .then(response => response.json())
+      .then(response => {
+        const ownerships = response.ownerships;
+        ownerships.map((value, key) => {
+          const owner_address = value.owner;
+          const owner_meta_address = owner_address.split("ETHEREUM:")[1];
+          if (owner_meta_address === loginUserAddress) {
+          // if (false) {
+            $.ajax({
+              type: 'POST',
+              url: 'php/verifyAccessPass.php',
+              'async': false,
+              dataType: "json",
+              data: {
+                "user_address": loginUserAddress,
+              },
+              success: function (data) {
+                if (data.status == '201') {
+                  console.log("Access Pass verified");
+                }
+              }
+            });
+          }
+          else{
+            console.log("Access Pass Not verified");
+          }
+        });
+      }).catch(err => console.error(err));
+  }
+  catch (err) { console.error(err); }
+}
+
+// Chcek for Premium Pass at the time of Login
+const verifyPremiumPass = async (loginUserAddress) => {
+  const options = { method: 'GET' };
+  // https://rarible.com/token/polygon/0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769?tab=owners
+  // const blockChain = 'POLYGON';
+  // const tokenId = '0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769';
+  // const otherOption = 'continuation=POLYGON&size=1000';
+  // const otherOption = '';
+  try {
+    // await fetch(`https://api.rarible.org/v0.1/ownerships/byItem?itemId=${blockChain}:${tokenId}&${otherOption}`, options)
+    await fetch(`https://rarible.com/token/polygon/0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280770?tab=owners`, options)
+      .then(response => response.json())
+      .then(response => {
+        const ownerships = response.ownerships;
+        ownerships.map((value, key) => {
+          const owner_address = value.owner;
+          const owner_meta_address = owner_address.split("ETHEREUM:")[1];
+          if (owner_meta_address === loginUserAddress) {
+          // if (false) {
+            $.ajax({
+              type: 'POST',
+              url: 'php/verifyPremiumPass.php',
+              'async': false,
+              dataType: "json",
+              data: {
+                "user_address": loginUserAddress,
+              },
+              success: function (data) {
+                if (data.status == '201') {
+                  console.log("Premium Pass verified");
+                }
+              }
+            });
+          }
+          else{
+            console.log("Premium Pass Not verified");
+          }
+        });
+      }).catch(err => console.error(err));
+  }
+  catch (err) { console.error(err); }
+}
