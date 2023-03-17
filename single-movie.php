@@ -100,6 +100,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
     <link rel="stylesheet" href="css/style.css" />
     <!--  Responsive -->
     <link rel="stylesheet" href="css/responsive.css" />
+    
     <link href="js/sweetalert/sweetalert.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.2/plyr.css" />
     <style type="text/css">
@@ -389,6 +390,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
 </head>
 
 <body>
+    
     <input type="hidden" name="video_uuid" value="<?= $course ?>" id="video_uuid">
     <input type="hidden" name="module_uuid" value="<?= $module ?>" id="module_uuid">
     <input type="hidden" id="rowCount" value="0">
@@ -409,7 +411,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
 
     <!-- Single movie Start -->
     <?php
-    if (($access_pass == "" && empty($super_pass) && $premium_pass == "") || !empty($super_pass)) {
+    if (($access_pass == "" && !empty($super_pass) && $premium_pass == "") || !empty($super_pass)) {
     ?>
         <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
         <script>
@@ -629,13 +631,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
                                     <h4 class="footer-title">Company</h4>
                                     <div class="menu-about-container">
                                         <ul class="menu">
-                                            <li class="menu-item"><a href="contact-us">Privacy
-                                                    Policy</a></li>
-                                            <li class="menu-item"><a href="contact-us">Terms Of
-                                                    Use</a></li>
                                             <li class="menu-item"><a href="contact-us">Contact us</a></li>
-
-                                            <li class="menu-item"><a href="contact-us">Faq</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -667,8 +663,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
                     <div class="container">
                         <div class="row">
                             <div class="col-md-12 align-self-center">
-                                <span class="gen-copyright"><a target="_blank" href="#"> Copyright 2022 crypticent
-                                        ertainments All Rights
+                                <span class="gen-copyright"><a target="_blank" href="#"> Copyright 2022 Cryptic Entertainments All Rights
                                         Reserved.</a></span>
                             </div>
                         </div>
@@ -723,7 +718,7 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
     <script src="js/sweetalert/sweetalert.min.js"></script>
     <script src="js/sweetalert/jquery.sweet-alert.custom.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
-
+    <script src="https://cdn.rawgit.com/video-dev/hls.js/18bb552/dist/hls.min.js"></script>
 
     <script>
         const player = new Plyr('video', {
@@ -902,21 +897,32 @@ if (isset($_GET['course']) && isset($_GET['module']) && ($_GET['module'] !== '')
 
                         if (Number(percentComplete) <= 50.00) {
                             document.querySelector('.number').innerHTML = percentComplete + '%';
-                            document.querySelector('.progress_left').style.transform = 'rotate(' + (percentComplete * 3.6) + 'deg)';
+                            document.querySelector('.progress_left').style.transform = 'rotate(' + (
+                                percentComplete * 3.6) + 'deg)';
                         } else {
                             document.querySelector('.number').innerHTML = percentComplete + '%';
-                            document.querySelector('.progress_right').style.transform = 'rotate(' + ((percentComplete % 50) * 3.6) + 'deg)';
+                            document.querySelector('.progress_right').style.transform = 'rotate(' + ((
+                                percentComplete % 50) * 3.6) + 'deg)';
                         }
                     }
                 }
             };
             request.onload = function() {
                 if (this.status === 200) {
-                    var file = new File([this.response], 'test.mp4', {
-                        type: 'video/mp4'
-                    });
-                    let url2 = URL.createObjectURL(file);
-                    document.getElementById('myVideo').src = url2;
+                    const source = video;
+                    const video_id = document.querySelector('video');
+                    console.log(source);
+                    if (!Hls.isSupported()) {
+                        video_id.src = source;
+                    } else {
+                        const hls = new Hls();
+                        hls.loadSource(source);
+                        hls.attachMedia(video_id);
+                        window.hls = hls;
+                        player.on('languagechange', () => {
+                            setTimeout(() => hls.subtitleTrack = player.currentTrack, 50);
+                        });
+                    }
                 }
             };
             request.send();

@@ -303,13 +303,7 @@ const verifyAccessPass = async (loginUserAddress) => {
 // Chcek for Premium Pass at the time of Login
 const verifyPremiumPass = async (loginUserAddress) => {
   const options = { method: 'GET' };
-  // https://rarible.com/token/polygon/0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769?tab=owners
-  // const blockChain = 'POLYGON';
-  // const tokenId = '0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769';
-  // const otherOption = 'continuation=POLYGON&size=1000';
-  // const otherOption = '';
   try {
-    // await fetch(`https://api.rarible.org/v0.1/ownerships/byItem?itemId=${blockChain}:${tokenId}&${otherOption}`, options)
     await fetch(`https://rarible.com/token/polygon/0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280770?tab=owners`, options)
       .then(response => response.json())
       .then(response => {
@@ -318,7 +312,6 @@ const verifyPremiumPass = async (loginUserAddress) => {
           const owner_address = value.owner;
           const owner_meta_address = owner_address.split("ETHEREUM:")[1];
           if (owner_meta_address === loginUserAddress) {
-          // if (false) {
             $.ajax({
               type: 'POST',
               url: 'php/verifyPremiumPass.php',

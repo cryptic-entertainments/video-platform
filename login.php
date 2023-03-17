@@ -62,14 +62,13 @@ if(isset($_SESSION['crypticUserAddress'])){
         height: 1px;
     }
 
-    .button:hover{
+    .button:hover {
         background-color: #03939b !important;
     }
     </style>
 </head>
 
 <body>
-
     <!--=========== Loader =============-->
     <div id="gen-loading">
         <div id="gen-loading-center">
@@ -143,10 +142,10 @@ if(isset($_SESSION['crypticUserAddress'])){
                         visit on Rariable and buy a plan to get the access. Thank You .
                         For more information visit now.</a>
                     </h5>
-                        <!-- <a
+                    <!-- <a
                             href="https://rarible.com/token/polygon/0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769?tab=owners"
                             style="color:var(--primary-color)">Token</a> -->
-                             
+
                 </div>
                 <div class="modal-footer">
                     <input type="button" class="button button-primary" data-dismiss="modal" value="Close"
@@ -200,7 +199,7 @@ if(isset($_SESSION['crypticUserAddress'])){
         window.location.replace(
             // "https://rarible.com/token/polygon/0xa2d9ded6115b7b7208459450d676f0127418ae7a:35330667205828808645805771972788148449949166894449166732923665699564597280769?tab=owners"
             "plans.php"
-            );
+        );
     }
     </script>
 
